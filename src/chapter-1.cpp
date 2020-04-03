@@ -49,24 +49,6 @@ int main(){
 	}
 	
 	glfwShowWindow(window);
-	glfwSwapBuffers(window);
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	GLuint vertexBuffer;
-	glGenBuffers(1,&vertexBuffer);
-
-
-	float vertices[]={
-		-0.5f,-0.5f,
-		0.0f,0.0f,
-		0.5f,0.5f
-	};
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 
 	const char* vertexSource = reader("./shaders/chapter-one.vert").c_str();
@@ -78,10 +60,7 @@ int main(){
 	if(vStatus!=GL_TRUE){
 		printf("Vertex Shader not Compiled\n");
 	}
-	// glGetShaderiv(vShader, GL_LINK_STATUS, &vStatus);
-	if(vStatus!= GL_TRUE){
-		printf("Link error");
-	}
+
 	char vBuffer[512];
 	glGetShaderInfoLog(vShader, 512, NULL, vBuffer);
 	cout<<vBuffer;
@@ -96,10 +75,7 @@ int main(){
 	if(fStatus!=GL_TRUE){
 		printf("Fragment Shader not compiled");
 	}
-	// glGetShaderiv(fShader, GL_LINK_STATUS, &fStatus);
-	if(fStatus!= GL_TRUE){
-		printf("Link error");
-	}
+
 	char fBuffer[512];
 	glGetShaderInfoLog(fShader, 512, NULL, fBuffer);
 	cout << fBuffer;
@@ -120,25 +96,44 @@ int main(){
 		cout<<proInfo<<"\n";
 	}
 
+	GLuint vao, vertexBuffer;
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1,&vertexBuffer);
+	glBindVertexArray(vao);
+
+	float vertices[]={
+		-0.5f,-0.5f,
+		0.0f,0.0f,
+		0.5f,0.5f
+	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, 3  * sizeof(vertices), vertices, GL_STATIC_DRAW);
+
 	// Getting positions from buffer into the program
 	GLuint posLoc = glGetAttribLocation(shaderProgram, "p");
 	printf("%i\n", posLoc);
+	glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray(posLoc);
-	glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	
+	glBindVertexArray(0);
 	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+        cout << "OpenGL error: " << err << "\n";
+    }
+	
+	glDrawElements(GL_TRIANGLES, 3, GL_FLOAT, 0);
+
 	while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << "\n";
 		cout << gluErrorString(err) << "\n";
     }
-	
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-
 	while(!glfwWindowShouldClose(window)){
-		glClearColor(1.0f,0.5f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glfwSwapBuffers(window);
+		// glClearColor(1.0f,0.5f, 0.5f, 1.0f);
+		// glClear(GL_COLOR_BUFFER_BIT);
+		glUseProgram(shaderProgram);
+		glBindVertexArray(vao);
+		glDrawArrays(GL_LINES, 0, 3);
     	glfwPollEvents();
 	}
 

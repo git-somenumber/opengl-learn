@@ -1,4 +1,4 @@
-#version 150 core
+#version 330 core
 in vec2 p;
 void main()
 {
