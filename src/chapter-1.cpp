@@ -24,8 +24,6 @@ int main(){
 	if(!glfwInit()){
 		printf("Error initialising glfw");
 	}
-
-	string a = reader("./file.txt");
 	
 	glfwSetErrorCallback(error_callback);
 	int major, minor, revision;
@@ -46,18 +44,20 @@ int main(){
 	glewInit();
 	if (!window)
 	{
-    		// Window or OpenGL context creation failed
+    	// Window or OpenGL context creation failed
 		printf("Failed to create window");
 	}
 	
 	glfwShowWindow(window);
 	glfwSwapBuffers(window);
 
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	GLuint vertexBuffer;
 	glGenBuffers(1,&vertexBuffer);
 
-	printf("%p\n", &vertexBuffer);
 
 	float vertices[]={
 		-0.5f,-0.5f,
@@ -68,61 +68,58 @@ int main(){
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	// Shaders
-	// const char* vertexSource = R"(
-	// #version 150 core
 
-   	//  in vec2 position;
+	const char* vertexSource = reader("./shaders/chapter-one.vert").c_str();
+	cout<<vertexSource;
+	GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vShader, 1, &vertexSource, NULL);
+	glCompileShader(vShader);
+	GLint vStatus;
+	glGetShaderiv(vShader, GL_COMPILE_STATUS, &vStatus);
+	if(vStatus!=GL_TRUE){
+		printf("Vertex Shader not Compiled\n");
+	}
+	char vBuffer[512];
+	glGetShaderInfoLog(vShader, 512, NULL, vBuffer);
+	cout<<vBuffer;
 
-   	//  void main()
-    // 	{
-    //     	gl_Position = vec4(position, 0.0, 1.0);
-    // 	}
-	// )";
 
-	// TODO:Commented for testing reader
-	// GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-	// glShaderSource(vShader, 1, &vertexSource, NULL);
-	// glCompileShader(vShader);
-	// GLint vStatus;
-	// glGetShaderiv(vShader, GL_COMPILE_STATUS, &vStatus);
-	// if(vStatus!=GL_TRUE){
-	// 	printf("Vertex Shader not Compiled");
-	// }
+	const char* fragmentSource = reader("./shaders/chapter-one.frag").c_str();
+	GLuint fShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(fShader, 1, &fragmentSource, NULL);
+	glCompileShader(fShader);
+	GLint fStatus;
+	glGetShaderiv(fShader, GL_COMPILE_STATUS, &fStatus);
+	if(fStatus!=GL_TRUE){
+		printf("Fragment Shader not compiled");
+	}
+	char fBuffer[512];
+	glGetShaderInfoLog(fShader, 512, NULL, fBuffer);
+	cout<<fBuffer;
 
-	// const char* fragmentSource = R"(
-	// 	#version 150 core
-	// 	out vec4 outColor;
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vShader);
+	glAttachShader(shaderProgram, fShader);
+	glBindFragDataLocation(shaderProgram, 0, "outColor");
+	glLinkProgram(shaderProgram);
+	glUseProgram(shaderProgram);
 
-	// 	void main()
-	// 	{
-	// 		outColor = vec4(1.0,1.0,1.0,1.0);
-	// 	}
-	// )";
-
-	// TODO:Commented for testing reader
-	// GLuint fShader = glCreateShader(GL_VERTEX_SHADER);
-	// glShaderSource(fShader, 1, &fragmentSource, NULL);
-	// glCompileShader(fShader);
-	// GLint fStatus;
-	// glGetShaderiv(fShader, GL_COMPILE_STATUS, &fStatus);
-	// if(fStatus!=GL_TRUE){
-	// 	printf("Fragment Shader not compiled");
-	// }
-
-	// GLuint shaderProgram = glCreateProgram();
-	// glAttachShader(shaderProgram, vShader);
-	// glAttachShader(shaderProgram, fShader);
-	// glLinkProgram(shaderProgram);
-	// glUseProgram(shaderProgram);
-
-	// // Getting positions from buffer into the program
-	// GLuint posLoc = glGetAttribLocation(shaderProgram, "position");
+	// Getting positions from buffer into the program
+	GLuint posLoc = glGetAttribLocation(shaderProgram, "p");
+	printf("%i\n", posLoc);
+	glEnableVertexAttribArray(posLoc);
+	glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	
 
+	
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
 	while(!glfwWindowShouldClose(window)){
+		glClearColor(1.0f,0.5f, 0.5f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glfwSwapBuffers(window);
-    		glfwPollEvents();
+    	glfwPollEvents();
 	}
 
 	glfwDestroyWindow(window);
