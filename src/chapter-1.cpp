@@ -70,7 +70,6 @@ int main(){
 
 
 	const char* vertexSource = reader("./shaders/chapter-one.vert").c_str();
-	cout<<vertexSource;
 	GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vShader, 1, &vertexSource, NULL);
 	glCompileShader(vShader);
@@ -79,13 +78,17 @@ int main(){
 	if(vStatus!=GL_TRUE){
 		printf("Vertex Shader not Compiled\n");
 	}
+	// glGetShaderiv(vShader, GL_LINK_STATUS, &vStatus);
+	if(vStatus!= GL_TRUE){
+		printf("Link error");
+	}
 	char vBuffer[512];
 	glGetShaderInfoLog(vShader, 512, NULL, vBuffer);
 	cout<<vBuffer;
 
 
 	const char* fragmentSource = reader("./shaders/chapter-one.frag").c_str();
-	GLuint fShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fShader, 1, &fragmentSource, NULL);
 	glCompileShader(fShader);
 	GLint fStatus;
@@ -93,16 +96,29 @@ int main(){
 	if(fStatus!=GL_TRUE){
 		printf("Fragment Shader not compiled");
 	}
+	// glGetShaderiv(fShader, GL_LINK_STATUS, &fStatus);
+	if(fStatus!= GL_TRUE){
+		printf("Link error");
+	}
 	char fBuffer[512];
 	glGetShaderInfoLog(fShader, 512, NULL, fBuffer);
-	cout<<fBuffer;
+	cout << fBuffer;
 
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vShader);
 	glAttachShader(shaderProgram, fShader);
-	glBindFragDataLocation(shaderProgram, 0, "outColor");
+	// glBindFragDataLocation(shaderProgram, 0, "outColor");
+	// glBindAttribLocation(shaderProgram, 10, "p");
 	glLinkProgram(shaderProgram);
 	glUseProgram(shaderProgram);
+	GLint proStatus;
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &proStatus);
+	if(proStatus!=GL_TRUE){
+		printf("Linking failed\n");
+		char proInfo[512];
+		glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
+		cout<<proInfo<<"\n";
+	}
 
 	// Getting positions from buffer into the program
 	GLuint posLoc = glGetAttribLocation(shaderProgram, "p");
@@ -110,7 +126,11 @@ int main(){
 	glEnableVertexAttribArray(posLoc);
 	glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	
-
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+        cout << "OpenGL error: " << err << "\n";
+		cout << gluErrorString(err) << "\n";
+    }
 	
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
