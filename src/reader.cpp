@@ -22,7 +22,7 @@ string reader(){
     return finalLine;
 }
 
-string reader(const char* file){
+string reader(char* file){
     ifstream infile;
     infile.open(file, std::ios::in);
     string line;
