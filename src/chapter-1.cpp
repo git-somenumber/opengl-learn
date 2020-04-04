@@ -17,6 +17,12 @@ void error_callback(int error, const char* description)
     printf("Error: %s\n", description);
 }
 
+void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+{
+	
+	std::cout << "source: "<< source << ", Type:  " << type << ", ID: "<< id << ",Severity: "<< severity << ", Message: " << ": " << message << '\n';
+}
+
 
 
 int main(){
@@ -25,7 +31,7 @@ int main(){
 		printf("Error initialising glfw");
 	}
 	
-	glfwSetErrorCallback(error_callback);
+//	glfwSetErrorCallback(error_callback);
 	int major, minor, revision;
 	glfwGetVersion(&major, &minor, &revision);
 
@@ -33,15 +39,19 @@ int main(){
 
 	// Window creation and hints also check if window creation failed
 	glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-	glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
+	glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	GLFWwindow* window = glfwCreateWindow(640, 480, "Title", NULL, NULL);
+    glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
-	glfwMakeContextCurrent(window);
-	glewInit();
+    if (glewInit() != GLEW_OK) {
+    	fprintf(stderr, "Failed to initialize GLEW\n");
+        return -1;
+	}
 	if (!window)
 	{
     	// Window or OpenGL context creation failed
@@ -49,6 +59,10 @@ int main(){
 	}
 	
 	glfwShowWindow(window);
+
+	int width, height;
+    glfwGetFramebufferSize(window, &width, &height);  
+    glViewport(0, 0, width, height);
 
 
 	const char* vertexSource = reader("./shaders/chapter-one.vert").c_str();
@@ -67,6 +81,7 @@ int main(){
 
 
 	const char* fragmentSource = reader("./shaders/chapter-one.frag").c_str();
+	cout<< fragmentSource;
 	GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fShader, 1, &fragmentSource, NULL);
 	glCompileShader(fShader);
@@ -83,7 +98,7 @@ int main(){
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vShader);
 	glAttachShader(shaderProgram, fShader);
-	// glBindFragDataLocation(shaderProgram, 0, "outColor");
+	glBindFragDataLocation(shaderProgram, 0, "outColor");
 	// glBindAttribLocation(shaderProgram, 10, "p");
 	glLinkProgram(shaderProgram);
 	glUseProgram(shaderProgram);
@@ -95,34 +110,40 @@ int main(){
 		glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
 		cout<<proInfo<<"\n";
 	}
+	char proInfo[512];
+	glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
+	cout<<proInfo<<"\n";
 
-	GLuint vao, vertexBuffer;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1,&vertexBuffer);
-	glBindVertexArray(vao);
 
-	float vertices[]={
-		-0.5f,-0.5f,
-		0.0f,0.0f,
-		0.5f,0.5f
-	};
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, 3  * sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // Create a Vertex Buffer Object and copy the vertex data to it
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
+    float vertices[] = {
+         0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
+         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
+    };
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// Getting positions from buffer into the program
 	GLuint posLoc = glGetAttribLocation(shaderProgram, "p");
 	printf("%i\n", posLoc);
-	glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(posLoc, 2, GL_FLOAT,GL_FALSE,5*sizeof(float) , 0);
+
 	glEnableVertexAttribArray(posLoc);
-	
-	glBindVertexArray(0);
 	GLenum err;
 	while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << "\n";
+		cout << gluErrorString(err) << "\n";
     }
-	
-	glDrawElements(GL_TRIANGLES, 3, GL_FLOAT, 0);
+	glUseProgram(shaderProgram);
+	glBindVertexArray(vao);
 
 	while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << "\n";
@@ -133,7 +154,8 @@ int main(){
 		// glClear(GL_COLOR_BUFFER_BIT);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(vao);
-		glDrawArrays(GL_LINES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+        glfwSwapBuffers(window);
     	glfwPollEvents();
 	}
 

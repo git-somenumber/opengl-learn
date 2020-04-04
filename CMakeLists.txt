@@ -28,6 +28,11 @@ target_link_libraries(one "-framework OpenGL")
 target_link_libraries(one glfw.3)
 target_link_libraries(one GLEW)
 
+add_executable(tri src/triangle/tri.cpp)
+target_link_libraries(tri "-framework OpenGL")
+target_link_libraries(tri glfw.3)
+target_link_libraries(tri GLEW)
+
 add_executable(blast src/blastoff.c)
 
 add_executable(nc src/triangle.c)
