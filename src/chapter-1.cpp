@@ -80,10 +80,15 @@ int main(){
 	// ================= Shaders for program - 1 ============== //
 	// Vertex Shader 1
 	GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-	createShader("./shaders/chapter-one.vert", vShader);
+	createShader((char*)"./shaders/chapter-one.vert", vShader);
 	// Fragment Shader 1
 	GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
-	createShader("./shaders/chapter-one.frag", fShader);
+	createShader((char*)"./shaders/chapter-one.frag", fShader);
+
+	// ================= Shaders for program - 1 ============== //
+
+	GLuint fShader2 = glCreateShader(GL_FRAGMENT_SHADER);
+	createShader((char*)"./shaders/one-uniform.frag", fShader2);	
 
 
 	// ================ Program - 1 - Setup ====================// 
@@ -103,7 +108,20 @@ int main(){
 	glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
 	cout<<proInfo<<"\n";
 
-	// ================ Program - 2 - Setup ====================//
+	// ================ Program - 2 - Setup ==================== //
+	GLuint shaderProgram2 = glCreateProgram();
+	glAttachShader(shaderProgram2, vShader);
+	glAttachShader(shaderProgram2, fShader2);
+	glLinkProgram(shaderProgram2);
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &proStatus);
+	if(proStatus!=GL_TRUE){
+		printf("Linking failed\n");
+		char proInfo[512];
+		glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
+		cout<<proInfo<<"\n";
+	}
+	glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
+	cout<<proInfo<<"\n";
 
 
 	//==============Triangle- 1 - Buffer setup=================//
@@ -158,6 +176,9 @@ int main(){
 	glVertexAttribPointer(color, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
 	glEnableVertexAttribArray(color);
 
+	// Using the uniform
+	GLint uniLoc = glGetUniformLocation(shaderProgram2, "triangleCol");
+
 
 	while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << "\n";
@@ -177,7 +198,8 @@ int main(){
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(vao2);
-		glUseProgram(shaderProgram);
+		glUseProgram(shaderProgram2);
+		glUniform3f(uniLoc, 0.4f, 0.3f, 0.7f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		while ((err = glGetError()) != GL_NO_ERROR) {
 			cout << "OpenGL error: " << err << "\n";
