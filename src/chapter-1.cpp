@@ -125,9 +125,9 @@ int main(){
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     float vertices[] = {
-         0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
-         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
-        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
+         0.0f,  0.5f, 1.0f, 0.0f, 0.0f,  // Vertex 1: Red
+         0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // Vertex 2: Green
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f   // Vertex 3: Blue
     };
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -138,6 +138,12 @@ int main(){
 
 	glEnableVertexAttribArray(posLoc);
 	GLenum err;
+
+	GLuint color = glGetAttribLocation(shaderProgram, "color");
+	glEnableVertexAttribArray(color);
+	glVertexAttribPointer(color, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
+
+
 	while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << "\n";
 		cout << gluErrorString(err) << "\n";
@@ -155,6 +161,10 @@ int main(){
 		glUseProgram(shaderProgram);
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+		while ((err = glGetError()) != GL_NO_ERROR) {
+        cout << "OpenGL error: " << err << "\n";
+		cout << gluErrorString(err) << "\n";
+    }
         glfwSwapBuffers(window);
     	glfwPollEvents();
 	}
