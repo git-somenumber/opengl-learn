@@ -1,11 +1,7 @@
 #include<GL/glew.h>
 #include<glfw3.h>
 #include<stdio.h>
-#include<iostream>
-#include<fstream>
-#include<sstream>
-#include<string>
-#include"reader.cpp"
+#include"shader.cpp"
 
 using std::cout;
 using std::ifstream;
@@ -23,19 +19,7 @@ void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GL
 	std::cout << "source: "<< source << ", Type:  " << type << ", ID: "<< id << ",Severity: "<< severity << ", Message: " << ": " << message << '\n';
 }
 
-void createShader(char* sourceFile, GLuint shader){
-	const char* source = reader(sourceFile).c_str();
-	glShaderSource(shader, 1, &source, NULL);
-	glCompileShader(shader);
-	GLint status;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	if(status != GL_TRUE){
-		cout << "Failed to compile shader" << sourceFile;
-	}
-	char info[512];
-	glGetShaderInfoLog(shader, 512, NULL, info);
-	cout << info;
-}
+
 
 
 int main(){
@@ -58,7 +42,7 @@ int main(){
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	GLFWwindow* window = glfwCreateWindow(640, 480, "Title", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(640, 480, "One", NULL, NULL);
     glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {

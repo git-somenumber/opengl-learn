@@ -1,8 +1,12 @@
+/**
+ *  Helpers for creating shaders
+ */ 
 #include<stdio.h>
 #include<iostream>
 #include<fstream>
 #include<sstream>
 #include<string>
+#include<GL/glew.h>
 
 using std::cout;
 using std::ifstream;
@@ -35,20 +39,19 @@ string reader(char* file){
 	return finalLine;
 }
 
-// void reader(){
-//     std::ifstream shader;
-//     std::string line;
-//     char* myline;
-
-//     shader.open("./file.txt", std::ios::in);
-//     if(shader.is_open()){
-//         shader>>myline;
-//         std::cout<<myline<<"\n";
-//     }
-//     else{
-//         printf("Failed to open file");
-//     }
-// }
+void createShader(char* sourceFile, GLuint shader){
+	const char* source = reader(sourceFile).c_str();
+	glShaderSource(shader, 1, &source, NULL);
+	glCompileShader(shader);
+	GLint status;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+	if(status != GL_TRUE){
+		cout << "Failed to compile shader" << sourceFile;
+	}
+	char info[512];
+	glGetShaderInfoLog(shader, 512, NULL, info);
+	cout << info;
+}
 
 //TODO:Removed to make it a library
 // int main(){
