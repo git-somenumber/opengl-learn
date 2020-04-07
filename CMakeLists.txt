@@ -44,3 +44,8 @@ add_executable(two src/chapter-2.cpp)
 target_link_libraries(two "-framework OpenGL")
 target_link_libraries(two glfw.3)
 target_link_libraries(two GLEW)
+
+add_executable(tex src/textures.cpp)
+target_link_libraries(tex "-framework OpenGL")
+target_link_libraries(tex glfw.3)
+target_link_libraries(tex GLEW)

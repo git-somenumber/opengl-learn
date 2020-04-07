@@ -64,7 +64,7 @@ int main(){
 	// ================= Shaders for program - 1 ============== //
 	// Vertex Shader 1
 	GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-	createShader((char*)"./shaders/chapter-one.vert", vShader);
+	createShader((char*)"./shaders/tex-2.vert", vShader);
 	// Fragment Shader 1
 	GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
 	createShader((char*)"./shaders/chapter-one.frag", fShader);

@@ -1,8 +1,8 @@
 #include<GL/glew.h>
 #include<glfw3.h>
 #include"shader.cpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include"stb_image.h"
+// #define STB_IMAGE_IMPLEMENTATION
+// #include"stb_image.h"
 
 
 void glfw_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -66,9 +66,6 @@ int main()
 	if(proStatus!=GL_TRUE)
     {
 		printf("Linking failed\n");
-		char proInfo[512];
-		glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
-		cout<<proInfo<<"\n";
 	}
 	char proInfo[512];
 	glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
@@ -114,10 +111,23 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     GLint width, height, nrChannels;
-    unsigned char* data = stbi_load("container.jpg", &width, &height, & nrChannels, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
+    // unsigned char* data = stbi_load("container.jpg", &width, &height, & nrChannels, 0);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, data);
+    // glGenerateMipmap(GL_TEXTURE_2D);
+    // stbi_image_free(data);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glUseProgram(shaderProgram);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, 4);
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        cout << "OpenGL error: " << err << "\n";
+        cout << gluErrorString(err) << "\n";
+    }
 
 
     while (!glfwWindowShouldClose(window))
@@ -129,11 +139,6 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 4);
         glfwSwapBuffers(window);
         glfwPollEvents();
-        GLenum err;
-        while ((err = glGetError()) != GL_NO_ERROR) {
-			cout << "OpenGL error: " << err << "\n";
-			cout << gluErrorString(err) << "\n";
-    	}
     }
     glfwDestroyWindow(window);
 

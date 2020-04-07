@@ -16,32 +16,44 @@ using std::getline;
 string reader(){
     ifstream infile;
     infile.open("./file.txt", std::ios::in);
-    string line;
-    string finalLine;
-    while(getline(infile, line)){
-        finalLine += line;
+    if(!infile.is_open()){
+	    printf("Failed to read shader");
     }
+    std::stringstream buffer;
+    buffer<<infile.rdbuf();
+    buffer<<"\0";
     infile.close();
-    const char* rLine = finalLine.c_str();
-    return finalLine;
+    return buffer.str();
+    //string line;
+    //string finalLine;
+    //while(getline(infile, line)){
+      //  finalLine += line;
+    //}
+    //infile.close();
+    //const char* rLine = finalLine.c_str();
+    //return finalLine;
 }
 
 string reader(char* file){
     ifstream infile;
     infile.open(file, std::ios::in);
-    string line;
-    string finalLine;
-    while(getline(infile, line)){
-        finalLine += line;
-		finalLine += "\n";
+    if(!infile.is_open()){
+	    printf("Failed to read shader\n");
+      printf("%s\n", file);
     }
+    std::stringstream buffer;
+    buffer<<infile.rdbuf();
     infile.close();
-	return finalLine;
+    printf(buffer.str().c_str());
+    string sha = buffer.str();
+    return sha;
 }
 
 void createShader(char* sourceFile, GLuint shader){
-	const char* source = reader(sourceFile).c_str();
-	glShaderSource(shader, 1, &source, NULL);
+  string p = reader(sourceFile);
+  const char* source = p.c_str();
+	printf("%s\n", source);
+	glShaderSource(shader, 1, &source, 0);
 	glCompileShader(shader);
 	GLint status;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
