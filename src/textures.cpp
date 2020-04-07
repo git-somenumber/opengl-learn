@@ -62,7 +62,7 @@ int main()
     unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
     GLuint tex;
     glGenTextures(1, &tex);
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE11);
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -88,30 +88,51 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, sizeof(vertices), GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
-    glEnableVertexAttribArray(0);
+    GLuint pos = glGetAttribLocation(shaderProgram, "pos");
+    cout<<pos<<" = pos \n";
+    glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
+    glEnableVertexAttribArray(pos);
 
-    glVertexAttribPointer(1, sizeof(vertices), GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        cout << "OpenGL error: " << err << "1\n";
+		cout << gluErrorString(err) << "\n";
+    }    
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, sizeof(vertices), GL_FLOAT, GL_FALSE, 8*sizeof(float),(void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float),(void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0);
+
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        cout << "OpenGL error: " << err << " 2 \n";
+		cout << gluErrorString(err) << "\n";
+    }
+
+    GLint uni = glGetUniformLocation(shaderProgram, "ourTexture");
+    cout<<uni<<" = uni\n";
+    glUseProgram(shaderProgram);
+    glUniform1i(uni, 11);
+
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        cout << "OpenGL error: " << err << " 3 \n";
+		cout << gluErrorString(err) << "\n";
+    }
 
     glUseProgram(shaderProgram);
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 4);
-    GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
-        cout << "OpenGL error: " << err << "\n";
+        cout << "OpenGL error: " << err << "4\n";
 		cout << gluErrorString(err) << "\n";
     }
 
     while(!glfwWindowShouldClose(window)){
         glUseProgram(shaderProgram);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 4);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

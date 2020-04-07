@@ -44,7 +44,6 @@ string reader(char* file){
     std::stringstream buffer;
     buffer<<infile.rdbuf();
     infile.close();
-    printf(buffer.str().c_str());
     string sha = buffer.str();
     return sha;
 }
@@ -52,7 +51,6 @@ string reader(char* file){
 void createShader(char* sourceFile, GLuint shader){
   string p = reader(sourceFile);
   const char* source = p.c_str();
-	printf("%s\n", source);
 	glShaderSource(shader, 1, &source, 0);
 	glCompileShader(shader);
 	GLint status;
