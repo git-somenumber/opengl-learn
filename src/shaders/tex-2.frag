@@ -6,9 +6,11 @@ in vec2 TexCoord;
 out vec4 FragColor;
 
 uniform sampler2D ourTexture;
+uniform sampler2D pikachu;
+uniform vec4 adj;
 
 void main(){
-	FragColor = texture(ourTexture, TexCoord)*vec4(Color,1.0);
+	FragColor = mix(texture(ourTexture, TexCoord), texture(pikachu, TexCoord),0.2);
 	//FragColor = vec4(Color,1.0);
 }
 

@@ -2,6 +2,10 @@
 #include<glfw3.h>
 #include<stdio.h>
 #include"shader.cpp"
+#include<math.h>
+#include<glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using std::cout;
 using std::ifstream;
@@ -64,7 +68,7 @@ int main(){
 	// ================= Shaders for program - 1 ============== //
 	// Vertex Shader 1
 	GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-	createShader((char*)"./shaders/tex-2.vert", vShader);
+	createShader((char*)"./shaders/chapter-one.vert", vShader);
 	// Fragment Shader 1
 	GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
 	createShader((char*)"./shaders/chapter-one.frag", fShader);
@@ -119,15 +123,14 @@ int main(){
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     float vertices[] = {
-         0.0f,  0.5f, 1.0f, 0.0f, 0.0f,  // Vertex 1: Red
-         0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // Vertex 2: Green
-        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f   // Vertex 3: Blue
+         0.0f,  0.5f,    1.0f, 0.0f, 0.0f,  // Vertex 1: Red
+         0.5f, -0.5f,    0.0f, 1.0f, 0.0f,  // Vertex 2: Green
+        -0.5f, -0.5f,    0.0f, 0.0f, 1.0f   // Vertex 3: Blue
     };
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// Getting positions from buffer into the program
 	GLuint posLoc = glGetAttribLocation(shaderProgram, "p");
-	printf("%i\n", posLoc);
 	glVertexAttribPointer(posLoc, 2, GL_FLOAT,GL_FALSE,5*sizeof(float) , 0);
 
 	glEnableVertexAttribArray(posLoc);
@@ -136,6 +139,9 @@ int main(){
 	GLuint color = glGetAttribLocation(shaderProgram, "color");
 	glEnableVertexAttribArray(color);
 	glVertexAttribPointer(color, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
+
+	GLuint offUni = glGetUniformLocation(shaderProgram, "posOffset");
+	cout<<offUni<<std::endl;
 
 	glBindVertexArray(0);
 
@@ -147,9 +153,9 @@ int main(){
 	glBindBuffer(GL_ARRAY_BUFFER, vbo2);
 
 	float vertices2[] = {
-		1.0f, 0.5f, 1.0f, 1.0f, 0.0f,
-		0.5f, 1.0f, 0.5f, 0.5f, 0.5f,
-		0.5f, 0.0f, 0.0f, 1.0f, 1.0f
+		1.0f, 0.5f,    1.0f, 1.0f, 0.0f,
+		0.5f, 1.0f,    0.5f, 0.5f, 0.5f,
+		0.5f, 0.0f,    0.0f, 1.0f, 1.0f
 	};
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
@@ -171,15 +177,23 @@ int main(){
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vao);
 
+	// ================== Setting up rotation matrix ================== //
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
 	while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << "\n";
 		cout << gluErrorString(err) << "\n";
     }
 	while(!glfwWindowShouldClose(window)){
-		// glClearColor(1.0f,0.5f, 0.5f, 1.0f);
-		// glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(1.0f,0.5f, 0.5f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		double time = glfwGetTime();
+		GLfloat sine = sin(time/20);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(vao);
+		
+		glUniform2f(offUni, sine, -sine);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(vao2);
 		glUseProgram(shaderProgram2);

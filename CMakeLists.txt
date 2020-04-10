@@ -10,6 +10,8 @@ link_directories(hello_lib/install/lib)
 include_directories(src/glfw-3.3.2.bin.MACOS/include/GLFW)
 link_directories(src/glfw-3.3.2.bin.MACOS/lib-macos)
 
+include_directories(src/glm)
+
 # add glew
 include_directories(src/glew/include)
 link_directories(src/glew/lib)

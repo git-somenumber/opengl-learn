@@ -57,12 +57,12 @@ int main()
 	glGetProgramInfoLog(shaderProgram, 512, NULL, proInfo);
 	cout<<proInfo<<"\n";
 
-    // Setting up the texture
+    // Setting up the texture - container
     GLint width, height, nrChannels;
     unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
     GLuint tex;
     glGenTextures(1, &tex);
-    glActiveTexture(GL_TEXTURE11);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -72,14 +72,30 @@ int main()
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
 
+    // Pikachu - Texture
+    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+    GLuint tex2;
+    glGenTextures(1, &tex2);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, tex2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+
     // Setting up the buffer
     float vertices[] = 
     {
         // positions          // colors           // texture coords
-     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+     0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.75f,-0.25f,0.0f,   1.0f, 0.123f, 0.32f,0.4f, 0.9f,
+    -0.75f,-0.75f,0.0f,   1.0f, 0.123f, 0.32f,0.0f,0.0f,
+    -0.25f,-0.5f, 0.0f,   1.0f, 0.123f, 0.32f,-0.8f,-0.3f 
     }; 
     GLuint vao, vbo;
     glGenVertexArrays(1, &vao);
@@ -114,7 +130,9 @@ int main()
     GLint uni = glGetUniformLocation(shaderProgram, "ourTexture");
     cout<<uni<<" = uni\n";
     glUseProgram(shaderProgram);
-    glUniform1i(uni, 11);
+    glUniform1i(uni, 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "pikachu"), 1);
+    glUniform4f(glGetUniformLocation(shaderProgram, "adj"), 1.0f, 1.0f, 1.0f, 1.0f);
 
     while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << " 3 \n";
@@ -129,10 +147,14 @@ int main()
 		cout << gluErrorString(err) << "\n";
     }
 
+    double val = 0;
     while(!glfwWindowShouldClose(window)){
+        float adj = sin(glfwGetTime());
         glUseProgram(shaderProgram);
         glBindVertexArray(vao);
+        glUniform4f(glGetUniformLocation(shaderProgram, "adj"), adj+0.5f, adj-0.5, adj, adj);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 3, 3);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

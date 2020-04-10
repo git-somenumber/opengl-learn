@@ -10,3 +10,5 @@ src/soil/**
 a.out
 .vscode/**
 hello_lib/**
+src/glm/**
+matrix/**
