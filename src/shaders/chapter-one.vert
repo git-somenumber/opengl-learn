@@ -1,10 +1,15 @@
 #version 150 core
-in vec4 p;
+in vec3 p;
 in vec3 color;
+
 out vec3 vert_color;
-uniform vec2 posOffset;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 proj;
+
 void main()
 {
-    gl_Position=vec4(p.x+posOffset.x, p.y+posOffset.y, p.z, p.w);
+    gl_Position = proj * view * model * vec4(p, 1.0);
     vert_color = color;
 }

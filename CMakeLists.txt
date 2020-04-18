@@ -19,35 +19,10 @@ link_directories(src/glew/lib)
 # stb - image loader
 include_directories(stb-lib)
 
+add_subdirectory(src)
+
 add_executable(main src/main.cpp)
 # add the OpenGL framework
 target_link_libraries(main "-framework OpenGL")
 target_link_libraries(main glfw_c)
 target_link_libraries(main gle)
-
-add_executable(one src/chapter-1.cpp)
-target_link_libraries(one "-framework OpenGL")
-target_link_libraries(one glfw.3)
-target_link_libraries(one GLEW)
-
-add_executable(tri src/triangle/tri.cpp)
-target_link_libraries(tri "-framework OpenGL")
-target_link_libraries(tri glfw.3)
-target_link_libraries(tri GLEW)
-
-add_executable(blast src/blastoff.c)
-
-add_executable(nc src/triangle.c)
-target_link_libraries(nc ncurses)
-find_library(glew GLEW src/glew/lib)
-target_link_libraries(nc glew)
-
-add_executable(two src/chapter-2.cpp)
-target_link_libraries(two "-framework OpenGL")
-target_link_libraries(two glfw.3)
-target_link_libraries(two GLEW)
-
-add_executable(tex src/textures.cpp)
-target_link_libraries(tex "-framework OpenGL")
-target_link_libraries(tex glfw.3)
-target_link_libraries(tex GLEW)

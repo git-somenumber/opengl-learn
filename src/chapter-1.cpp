@@ -17,12 +17,10 @@ void error_callback(int error, const char* description)
     printf("Error: %s\n", description);
 }
 
-void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+void key_callback(GLFWwindow* window, int a, int b, int c, int d)
 {
-	
-	std::cout << "source: "<< source << ", Type:  " << type << ", ID: "<< id << ",Severity: "<< severity << ", Message: " << ": " << message << '\n';
+	glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
-
 
 
 
@@ -32,7 +30,7 @@ int main(){
 		printf("Error initialising glfw");
 	}
 	
-//	glfwSetErrorCallback(error_callback);
+	glfwSetErrorCallback(error_callback);
 	int major, minor, revision;
 	glfwGetVersion(&major, &minor, &revision);
 
@@ -47,9 +45,9 @@ int main(){
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	GLFWwindow* window = glfwCreateWindow(640, 480, "One", NULL, NULL);
-    glfwMakeContextCurrent(window);
+    	glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
+	if (glewInit() != GLEW_OK) {
     	fprintf(stderr, "Failed to initialize GLEW\n");
         return -1;
 	}
@@ -60,10 +58,11 @@ int main(){
 	}
 	
 	glfwShowWindow(window);
+	glfwSetKeyCallback(window, key_callback);
 
 	int width, height;
-    glfwGetFramebufferSize(window, &width, &height);  
-    glViewport(0, 0, width, height);
+    	glfwGetFramebufferSize(window, &width, &height);  
+    	glViewport(0, 0, width, height);
 
 	// ================= Shaders for program - 1 ============== //
 	// Vertex Shader 1
@@ -113,35 +112,41 @@ int main(){
 
 
 	//==============Triangle- 1 - Buffer setup=================//
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
-    // Create a Vertex Buffer Object and copy the vertex data to it
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	// Create a Vertex Buffer Object and copy the vertex data to it
+	GLuint vbo, ebo;
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
+	float indices[] = {
+		0,1,2,
+		1,2,3
+	};
     float vertices[] = {
-         0.0f,  0.5f,    1.0f, 0.0f, 0.0f,  // Vertex 1: Red
-         0.5f, -0.5f,    0.0f, 1.0f, 0.0f,  // Vertex 2: Green
-        -0.5f, -0.5f,    0.0f, 0.0f, 1.0f   // Vertex 3: Blue
+         0.5f,  0.5f,0.0f,    1.0f, 0.0f, 0.0f,  // Vertex 1: Red
+         0.5f, -0.5f,0.0f,    0.0f, 1.0f, 0.0f,  // Vertex 2: Green
+        -0.5f, -0.5f,0.0f,    0.0f, 0.0f, 1.0f,  // Vertex 3: Blue
+		-0.5f,  0.5f,0.0f,    0.0f, 0.0f, 1.0f
     };
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	// Getting positions from buffer into the program
 	GLuint posLoc = glGetAttribLocation(shaderProgram, "p");
-	glVertexAttribPointer(posLoc, 2, GL_FLOAT,GL_FALSE,5*sizeof(float) , 0);
+	glVertexAttribPointer(posLoc, 3, GL_FLOAT,GL_FALSE,6*sizeof(float) , 0);
 
 	glEnableVertexAttribArray(posLoc);
 	GLenum err;
 
 	GLuint color = glGetAttribLocation(shaderProgram, "color");
 	glEnableVertexAttribArray(color);
-	glVertexAttribPointer(color, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
-
-	GLuint offUni = glGetUniformLocation(shaderProgram, "posOffset");
-	cout<<offUni<<std::endl;
+	glVertexAttribPointer(color, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
 
 	glBindVertexArray(0);
 
@@ -177,10 +182,33 @@ int main(){
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vao);
 
-	// ================== Setting up rotation matrix ================== //
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	// ================== Setting up matrices ================== //
+	glm::mat4 modelMat = glm::mat4(1.0f);
+	modelMat = glm::rotate(modelMat, glm::radians(-45.0f), glm::vec3(1.0f,0.0f,0.0f));
 
+	glm::mat4 viewMat = glm::mat4(1.0f);
+	viewMat = glm::translate(viewMat, glm::vec3(0.0f,0.0f, -1.0f));
+	// viewMat = glm::lookAt(
+	// 	glm::vec3(0.0f, 0.0f, -1.0f),
+    //  	glm::vec3(0.0f, 0.0f, 0.0f),
+    // 	glm::vec3(0.0f, 1.0f, 0.0f)
+	// );
+
+	glm::mat4 projMat = glm::mat4(1.0f);
+	projMat = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f,100.0f);
+	printf("%f,%f, %f,%f \n", projMat[0].x, projMat[0].y, projMat[0].z, projMat[0].w);
+	printf("%f,%f, %f,%f \n", projMat[1].x, projMat[1].y, projMat[1].z, projMat[1].w);
+	printf("%f,%f, %f,%f \n", projMat[2].x, projMat[2].y, projMat[2].z, projMat[2].w);
+	printf("%f,%f, %f,%f \n", projMat[3].x, projMat[3].y, projMat[3].z, projMat[3].w);
+
+	// ================== Looking up matrix location ================== //
+	GLint model = glGetUniformLocation(shaderProgram, "model");
+	GLint view = glGetUniformLocation(shaderProgram, "view");
+	GLint proj  = glGetUniformLocation(shaderProgram, "proj");
+	cout<< "model: " << model 
+		<< "\n view: "<< view 
+		<< "\n proj: " << proj << "\n";
+	
 	while ((err = glGetError()) != GL_NO_ERROR) {
         cout << "OpenGL error: " << err << "\n";
 		cout << gluErrorString(err) << "\n";
@@ -189,15 +217,30 @@ int main(){
 		glClearColor(1.0f,0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		double time = glfwGetTime();
-		GLfloat sine = sin(time/20);
+		GLfloat sine = sin(time/200);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(vao);
 		
-		glUniform2f(offUni, sine, -sine);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		modelMat =  glm::rotate(modelMat, glm::radians(sine*180.0f), glm::vec3(1.0f,0.0f,0.0f));
+		glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
+		// viewMat = glm::lookAt(
+		// glm::vec3(0.0f, 0.0f, 1.0f),
+     	// glm::vec3(0.5f, 0.5f, 0.0f),
+    	// glm::vec3(0.0f, 1.0f, 0.0f)
+		// );
+		glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(viewMat));
+		glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(projMat));
+		glDrawArrays(GL_TRIANGLES, 0,3);
+		modelMat =  glm::rotate(modelMat, glm::radians(5.0f), glm::vec3(1.0f,0.0f,0.0f));
+		glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
+		glDrawArrays(GL_TRIANGLES, 1,3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		// No error
 		glBindVertexArray(vao2);
 		glUseProgram(shaderProgram2);
 		glUniform3f(uniLoc, 0.4f, 0.3f, 0.7f);
+		GLint model2= glGetUniformLocation(shaderProgram2, "model");
+		glUniformMatrix4fv(model2, 1,GL_FALSE, glm::value_ptr(modelMat));
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		while ((err = glGetError()) != GL_NO_ERROR) {
 			cout << "OpenGL error: " << err << "\n";

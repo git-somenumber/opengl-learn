@@ -12,3 +12,4 @@ a.out
 hello_lib/**
 src/glm/**
 matrix/**
+.clangd/**
