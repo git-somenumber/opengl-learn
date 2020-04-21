@@ -45,7 +45,7 @@ int main(){
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	GLFWwindow* window = glfwCreateWindow(640, 480, "One", NULL, NULL);
-    	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK) {
     	fprintf(stderr, "Failed to initialize GLEW\n");
@@ -140,8 +140,8 @@ int main(){
 	// Getting positions from buffer into the program
 	GLuint posLoc = glGetAttribLocation(shaderProgram, "p");
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT,GL_FALSE,6*sizeof(float) , 0);
-
 	glEnableVertexAttribArray(posLoc);
+
 	GLenum err;
 
 	GLuint color = glGetAttribLocation(shaderProgram, "color");
@@ -183,8 +183,11 @@ int main(){
 	glBindVertexArray(vao);
 
 	// ================== Setting up matrices ================== //
-	glm::mat4 modelMat = glm::mat4(1.0f);
-	modelMat = glm::rotate(modelMat, glm::radians(-45.0f), glm::vec3(1.0f,0.0f,0.0f));
+	glm::mat4 model1Mat = glm::mat4(1.0f);
+	model1Mat = glm::rotate(model1Mat, glm::radians(-45.0f), glm::vec3(1.0f,0.0f,0.0f));
+
+	glm::mat4 model2Mat = glm::mat4(1.0f);
+	model2Mat = glm::translate(model2Mat, glm::vec3(0.25f,0.25f,0.0f));
 
 	glm::mat4 viewMat = glm::mat4(1.0f);
 	viewMat = glm::translate(viewMat, glm::vec3(0.0f,0.0f, -1.0f));
@@ -213,34 +216,42 @@ int main(){
         cout << "OpenGL error: " << err << "\n";
 		cout << gluErrorString(err) << "\n";
     }
+	// ================== ebo ================== //
+	float indice[] = {
+		0,1,2,
+		1,2,3
+	};
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indice, GL_STATIC_DRAW);
+
 	while(!glfwWindowShouldClose(window)){
-		glClearColor(1.0f,0.5f, 0.5f, 1.0f);
+		glClearColor( 1.0f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		double time = glfwGetTime();
 		GLfloat sine = sin(time/200);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(vao);
 		
-		modelMat =  glm::rotate(modelMat, glm::radians(sine*180.0f), glm::vec3(1.0f,0.0f,0.0f));
-		glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
-		// viewMat = glm::lookAt(
-		// glm::vec3(0.0f, 0.0f, 1.0f),
-     	// glm::vec3(0.5f, 0.5f, 0.0f),
-    	// glm::vec3(0.0f, 1.0f, 0.0f)
-		// );
+		model1Mat = glm::rotate(model1Mat, glm::radians(sine*180.0f), glm::vec3(1.0f,0.0f,0.0f));
+		glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(model1Mat));
+		
 		glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(viewMat));
 		glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(projMat));
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, &indices);
+
 		glDrawArrays(GL_TRIANGLES, 0,3);
-		modelMat =  glm::rotate(modelMat, glm::radians(5.0f), glm::vec3(1.0f,0.0f,0.0f));
-		glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
-		glDrawArrays(GL_TRIANGLES, 1,3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		// model1Mat=  glm::rotate(model1Mat, glm::radians(5.0f), glm::vec3(1.0f,0.0f,0.0f));
+		// glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(model1Mat));
+		glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(model2Mat));
+		glDrawArrays(GL_TRIANGLES, 1, 3);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, &indices);
 		// No error
 		glBindVertexArray(vao2);
 		glUseProgram(shaderProgram2);
 		glUniform3f(uniLoc, 0.4f, 0.3f, 0.7f);
 		GLint model2= glGetUniformLocation(shaderProgram2, "model");
-		glUniformMatrix4fv(model2, 1,GL_FALSE, glm::value_ptr(modelMat));
+		glUniformMatrix4fv(model2, 1, GL_FALSE, glm::value_ptr(model1Mat));
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		while ((err = glGetError()) != GL_NO_ERROR) {
 			cout << "OpenGL error: " << err << "\n";
@@ -251,6 +262,16 @@ int main(){
 	}
 
 	glfwDestroyWindow(window);
+	glDeleteProgram(shaderProgram2);
+	glDeleteProgram(shaderProgram);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);	
+	glDeleteShader(fShader2);
+	glDeleteVertexArrays(1, &vao);
+	glDeleteVertexArrays(1, &vao2);
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
+	glDeleteBuffers(1, &vbo2);
 
 	glfwTerminate();
 

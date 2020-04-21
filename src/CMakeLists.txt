@@ -27,3 +27,8 @@ add_executable(tex ./textures.cpp)
 target_link_libraries(tex "-framework OpenGL")
 target_link_libraries(tex glfw.3)
 target_link_libraries(tex GLEW)
+
+add_executable(depth ./depth/depth.cpp)
+target_link_libraries(depth "-framework OpenGL")
+target_link_libraries(depth glfw.3)
+target_link_libraries(depth GLEW)
