@@ -84,10 +84,10 @@ int main()
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     float vertices[] = {
-	    0.5f, 0.5f, 1.0f,    1.0f, 1.0f, 0.0f,
-	    0.5f, -0.5f, 1.0f,   1.0f, 0.0f, 0.0f,
-	    -0.5f, -0.5f, 1.0f,  0.0f, 0.0f, 1.0f,
-	    -0.5f, 0.5f, 1.0f,   0.0f, 1.0f, 1.0f
+	    0.5f, 0.5f, 0.0f,    1.0f, 1.0f, 0.0f,
+	    0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,
+	    -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
+	    -0.5f, 0.5f, 0.0f,   0.0f, 1.0f, 1.0f
     };
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -101,7 +101,7 @@ int main()
 
     // Matrix init
     glm::mat4 modelMat = glm::mat4(1.0f);
-    modelMat = glm::rotate(modelMat, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMat = glm::rotate(modelMat, glm::radians(-80.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 viewMat = glm::mat4(1.0f);
     viewMat = glm::translate(viewMat, glm::vec3(0.0f, 0.0f, -1.0f));
     glm::mat4 projMat = glm::mat4(1.0f);
