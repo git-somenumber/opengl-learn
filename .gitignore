@@ -6,6 +6,10 @@ install/**
 .DS_STORE
 src/glew/**
 src/glfw-3.3.2.bin.MACOS/**
+src/soil/**
 a.out
 .vscode/**
 hello_lib/**
+src/glm/**
+matrix/**
+.clangd/**

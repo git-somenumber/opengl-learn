@@ -6,6 +6,7 @@
 void error_callback(int error, const char* description)
 {
     printf("Error: %s\n", description);
+    char* raw = "Aashay";
 }
 
 int main(){
@@ -45,7 +46,7 @@ int main(){
 	printf("%p\n",glGenBuffers);
 	glGenBuffers(1,vertexBuffer);
 
-	printf("%u\n", vertexBuffer);
+	printf("%p\n", vertexBuffer);
 
 
 	while(!glfwWindowShouldClose(window)){
