@@ -32,3 +32,8 @@ add_executable(depth ./depth/depth.cpp)
 target_link_libraries(depth "-framework OpenGL")
 target_link_libraries(depth glfw.3)
 target_link_libraries(depth GLEW)
+
+add_executable(multi ./depth/multiple_3d.cpp)
+target_link_libraries(multi "-framework OpenGL")
+target_link_libraries(multi glfw.3)
+target_link_libraries(multi GLEW)
