@@ -14,7 +14,9 @@
 
 void glfw_call(GLFWwindow * window, int a , int b, int c, int d)
 {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if(a == GLFW_KEY_Q){
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
 }
 
 int main()
@@ -27,7 +29,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	GLFWwindow* window = glfwCreateWindow(640, 480, "One", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(640, 480, "Multi", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
 	if (glewInit()) {
@@ -65,6 +67,7 @@ int main()
     std::cout<<proInfo<<"\n";
     GLuint posLoc = glGetAttribLocation(program, "position");
     GLuint texLoc = glGetAttribLocation(program, "texCoord");
+    GLuint colLoc = glGetAttribLocation(program, "color");
 
 
     // Cube buffer init //
@@ -139,6 +142,27 @@ GLfloat verticesCube[] = {
     glm::mat4 projMat = glm::mat4(1.0f);
 	projMat = glm::perspective(glm::radians(90.0f), 640.0f/480.0f, 1.0f,100.0f);
 
+    // stencil body create buffer
+    GLuint vaoS, vboS;
+    glGenVertexArrays(1, &vaoS);
+    glBindVertexArray(vaoS);
+    glGenBuffers(1, &vboS);
+    glBindBuffer(GL_ARRAY_BUFFER, vboS);
+    float verts[] = {
+        0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+        0.75f, 0.75f, 0.0f,  1.0f, 1.0f, 1.0f,
+        -0.5f, -1.0f, 1.0f,   1.0f, 1.0f, 1.0f
+
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), &verts, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
+    glEnableVertexAttribArray(posLoc);
+
+    glVertexAttribPointer(colLoc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(colLoc);
+
+
     // Locations of matrices
     GLint model = glGetUniformLocation(program, "model");
     GLint view = glGetUniformLocation(program, "view");
@@ -151,8 +175,6 @@ GLfloat verticesCube[] = {
 	cout << gluErrorString(err) << "{three}"<< "\n";
     }
     glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
-    glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(viewMat));
-    glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(projMat));
     while ((err = glGetError()) != GL_NO_ERROR) {
 	std::cout << "OpenGL error: " << err << "\n";
 	cout << gluErrorString(err) << "{one}"<< "\n";
@@ -174,9 +196,12 @@ GLfloat verticesCube[] = {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     stbi_image_free(data);
 
+        GLint val;
+       glGetIntegerv(GL_STENCIL_BITS, &val); 
+       cout<<val<<"\n";
     while ((err = glGetError()) != GL_NO_ERROR) {
 	std::cout << "OpenGL error: " << err << "\n";
-	cout << gluErrorString(err) << "{one}"<< "\n";
+	cout << gluErrorString(err) << "{val}"<< "\n";
     }
 const glm::mat4 refModelMat = glm::rotate(
             glm::mat4(1.0f),
@@ -188,18 +213,34 @@ const glm::mat4 refModelMat = glm::rotate(
         glm::vec3(0.25f, 0.25f, 0.25f),
         glm::vec3(-0.5f,-0.5f, -0.75f)
     };
+        glm::mat4 stenPos = glm::mat4(1.0f);
+        stenPos = glm::translate(stenPos, glm::vec3(-0.7f, 0.0f, 0.0f));
     while(!glfwWindowShouldClose(window))
     {
         float time = glfwGetTime();
         glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glUseProgram(program);
         
+        glEnable(GL_STENCIL_TEST);
+        glStencilMask(0xFF);
+
+        glStencilFunc(GL_ALWAYS, 3, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT);
+        glBindVertexArray(vaoS);
+        glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(glm::mat4(stenPos)));
+        glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+        glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glStencilMask(0x00);
+        glStencilFunc(GL_EQUAL, 255, 0xFF);
         // modelMat = glm::rotate(
         //     refModelMat,
         //     time * glm::radians(180.0f),
         //     glm::vec3(0.0f, 0.0f, 1.0f)
         // );
+    glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(viewMat));
+    glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(projMat));
         for(int i = 0; i<3;i++){
             glm::mat4 x = glm::translate(modelMat, pos[i]);
             x = glm::rotate(x, glm::radians(time*i*20.0f), glm::vec3(1.0f, 0.3f, 0.0f));
@@ -207,6 +248,7 @@ const glm::mat4 refModelMat = glm::rotate(
             glBindVertexArray(vaoC);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+        glDisable(GL_STENCIL_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
