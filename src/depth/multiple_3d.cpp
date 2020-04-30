@@ -135,12 +135,16 @@ GLfloat verticesCube[] = {
     glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
     glEnableVertexAttribArray(texLoc);
 
-    glm::mat4 modelMat = glm::mat4(1.0f);
+    glVertexAttribPointer(colLoc, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(colLoc);
+
+    glm::mat4 modelMat = glm::mat4(0.5f);
     modelMat = glm::rotate(modelMat, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
     glm::mat4 viewMat = glm::mat4(1.0f);
     viewMat = glm::translate(viewMat, glm::vec3(0.0f, 0.0f, -3.0f));
     glm::mat4 projMat = glm::mat4(1.0f);
-	projMat = glm::perspective(glm::radians(90.0f), 640.0f/480.0f, 1.0f,100.0f);
+	projMat = glm::perspective(glm::radians(45.0f), 640.0f/480.0f, 1.0f,100.0f);
 
     // stencil body create buffer
     GLuint vaoS, vboS;
@@ -209,9 +213,10 @@ const glm::mat4 refModelMat = glm::rotate(
             glm::vec3(1.0f, 0.0f, 0.0f)
     );
     glm::vec3 pos[] = {
-        glm::vec3(0.5f, 0.5f, 0.5f),
-        glm::vec3(0.25f, 0.25f, 0.25f),
-        glm::vec3(-0.5f,-0.5f, -0.75f)
+        glm::vec3(0.75f, 0.75f, -0.5f),
+        glm::vec3(0.25f, 0.25f, -0.25f),
+        glm::vec3(-0.5f,-0.5f, -0.75f),
+        glm::vec3(-0.5f, 0.5f, -0.75f)
     };
         glm::mat4 stenPos = glm::mat4(1.0f);
         stenPos = glm::translate(stenPos, glm::vec3(-0.7f, 0.0f, 0.0f));
@@ -231,9 +236,10 @@ const glm::mat4 refModelMat = glm::rotate(
         glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(glm::mat4(stenPos)));
         glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
         glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
         glStencilMask(0x00);
         glStencilFunc(GL_EQUAL, 255, 0xFF);
+        glDisable(GL_STENCIL_TEST);
         // modelMat = glm::rotate(
         //     refModelMat,
         //     time * glm::radians(180.0f),
@@ -241,9 +247,10 @@ const glm::mat4 refModelMat = glm::rotate(
         // );
     glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(viewMat));
     glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(projMat));
-        for(int i = 0; i<3;i++){
+    modelMat = glm::rotate(modelMat, glm::radians(time*0.02f), glm::vec3(0.0f, 1.0f, 0.0f));
+        for(int i = 0; i<4;i++){
             glm::mat4 x = glm::translate(modelMat, pos[i]);
-            x = glm::rotate(x, glm::radians(time*i*20.0f), glm::vec3(1.0f, 0.3f, 0.0f));
+            x = glm::rotate(x, glm::radians(time*(i+1)*20.0f), glm::vec3(1.0f, 0.3f, 0.0f));
             glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(x));
             glBindVertexArray(vaoC);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -257,6 +264,15 @@ const glm::mat4 refModelMat = glm::rotate(
 	std::cout << "OpenGL error: " << err << "\n";
 	cout << gluErrorString(err) << "{one}"<< "\n";
     }
+    glDeleteVertexArrays(1, &vaoC);
+    glDeleteVertexArrays(1, &vaoS);
+    glDeleteBuffers(1, &vboC);
+    glDeleteBuffers(1, &vboS);
+    glDeleteProgram(program);
+    glDeleteShader(vShader);
+    glDeleteShader(fShader);
+    glDeleteTextures(1, &tex);
+
     glfwDestroyWindow(window);
     glfwTerminate();
 }

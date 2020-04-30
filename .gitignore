@@ -13,3 +13,4 @@ hello_lib/**
 src/glm/**
 matrix/**
 .clangd/**
+ninja-build/**
