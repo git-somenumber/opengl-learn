@@ -11,26 +11,14 @@
 #include<glm/gtc/type_ptr.hpp>
 #define GL_SILENCE_DEPRECIATION
 
+
 void glfw_call(GLFWwindow * window, int a , int b, int c, int d)
 {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if(a == GLFW_KEY_Q){
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
 }
-void mat(GLuint program)
-{
-	glm::mat4 modelMat = glm::mat4(1.0f);
-	// modelMat = glm::rotate(modelMat, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-	glm::mat4 viewMat = glm::mat4(1.0f);
-
-
-	glm::mat4 projMat = glm::mat4(1.0f);
-
-
-	GLuint model = glGetAttribLocation(program, "model");
-	GLuint view = glGetAttribLocation(program, "view");
-	GLuint proj = glGetAttribLocation(program, "proj");
-}
 int main()
 {
     glfwInit();
@@ -41,7 +29,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	GLFWwindow* window = glfwCreateWindow(640, 480, "One", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(640, 480, "Multi", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
 	if (glewInit()) {
@@ -79,6 +67,7 @@ int main()
     std::cout<<proInfo<<"\n";
     GLuint posLoc = glGetAttribLocation(program, "position");
     GLuint texLoc = glGetAttribLocation(program, "texCoord");
+    GLuint colLoc = glGetAttribLocation(program, "color");
 
 
     // Cube buffer init //
@@ -146,89 +135,57 @@ GLfloat verticesCube[] = {
     glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
     glEnableVertexAttribArray(texLoc);
 
-    // =========== Buffer - Init ==============//
-    GLuint vao, vbo, ebo;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    float vertices[] = {
-	    0.5f, 0.5f, 0.0f,    1.0f, 1.0f, 0.0f,
-	    0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,
-	    -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
-	    -0.5f, 0.5f, 0.0f,   0.0f, 1.0f, 1.0f,
-	    
-	    0.5f, 0.5f, -1.0f,    1.0f, 1.0f, 0.0f,
-	    0.5f, -0.5f, -1.0f,   1.0f, 0.0f, 0.0f,
-	    -0.5f, -0.5f, -1.0f,  0.0f, 0.0f, 1.0f,
-	    -0.5f, 0.5f, -1.0f,   0.0f, 1.0f, 1.0f
-	   
-    };
+    glVertexAttribPointer(colLoc, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(colLoc);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    GLuint indices[] = {
-    0 , 1, 2,
-	2 , 3, 0,
-
-	4 , 5, 6,
-	6 , 7, 4,
-
-	7 , 6, 2,
-	2 , 3, 7,
-
-	4 , 5, 1,
-	1 , 0, 4,
-
-	3 , 0, 4,
-	4 , 7, 3,
-
-	2 , 1, 5,
-	5 , 6, 2
-    };
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Matrix init
-    glm::mat4 modelMat = glm::mat4(1.0f);
+    glm::mat4 modelMat = glm::mat4(0.5f);
     modelMat = glm::rotate(modelMat, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
     glm::mat4 viewMat = glm::mat4(1.0f);
     viewMat = glm::translate(viewMat, glm::vec3(0.0f, 0.0f, -3.0f));
     glm::mat4 projMat = glm::mat4(1.0f);
-	projMat = glm::perspective(glm::radians(90.0f), 640.0f/480.0f, 1.0f,100.0f);
+	projMat = glm::perspective(glm::radians(45.0f), 640.0f/480.0f, 1.0f,100.0f);
+
+    // stencil body create buffer
+    GLuint vaoS, vboS;
+    glGenVertexArrays(1, &vaoS);
+    glBindVertexArray(vaoS);
+    glGenBuffers(1, &vboS);
+    glBindBuffer(GL_ARRAY_BUFFER, vboS);
+    float verts[] = {
+        0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+        0.75f, 0.75f, 0.0f,  1.0f, 1.0f, 1.0f,
+        -0.5f, -1.0f, 1.0f,   1.0f, 1.0f, 1.0f
+
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), &verts, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
+    glEnableVertexAttribArray(posLoc);
+
+    glVertexAttribPointer(colLoc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(colLoc);
+
 
     // Locations of matrices
     GLint model = glGetUniformLocation(program, "model");
     GLint view = glGetUniformLocation(program, "view");
     GLint proj = glGetUniformLocation(program, "proj");
-    std::cout<<view<<"\n";
 
-    // Providing matrices
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) {
-	std::cout << "OpenGL error: " << err << "\n";
-	cout << gluErrorString(err) << "{two}"<< "\n";
-    }
     glUseProgram(program);
+    GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
 	std::cout << "OpenGL error: " << err << "\n";
 	cout << gluErrorString(err) << "{three}"<< "\n";
     }
     glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
-    glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(viewMat));
-    glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(projMat));
     while ((err = glGetError()) != GL_NO_ERROR) {
 	std::cout << "OpenGL error: " << err << "\n";
 	cout << gluErrorString(err) << "{one}"<< "\n";
     }
 
     // Activating program and providing buffer location
-    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(0*sizeof(float)));
-    glEnableVertexAttribArray(posLoc);
-   
-    glVertexAttribPointer(texLoc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float))); 
-    glEnableVertexAttribArray(texLoc);
+
 
     // ================ texture-init ================== //
     GLuint tex;
@@ -243,70 +200,79 @@ GLfloat verticesCube[] = {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     stbi_image_free(data);
 
-
+        GLint val;
+       glGetIntegerv(GL_STENCIL_BITS, &val); 
+       cout<<val<<"\n";
     while ((err = glGetError()) != GL_NO_ERROR) {
 	std::cout << "OpenGL error: " << err << "\n";
-	cout << gluErrorString(err) << "\n";
+	cout << gluErrorString(err) << "{val}"<< "\n";
     }
-    const glm::mat4 refModelMat = glm::rotate(
+const glm::mat4 refModelMat = glm::rotate(
             glm::mat4(1.0f),
             glm::radians(-70.0f),
             glm::vec3(1.0f, 0.0f, 0.0f)
     );
+    glm::vec3 pos[] = {
+        glm::vec3(0.75f, 0.75f, -0.5f),
+        glm::vec3(0.25f, 0.25f, -0.25f),
+        glm::vec3(-0.5f,-0.5f, -0.75f),
+        glm::vec3(-0.5f, 0.5f, -0.75f)
+    };
+        glm::mat4 stenPos = glm::mat4(1.0f);
+        stenPos = glm::translate(stenPos, glm::vec3(-0.7f, 0.0f, 0.0f));
     while(!glfwWindowShouldClose(window))
     {
         float time = glfwGetTime();
-        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	    glUseProgram(program);
-	    // glBindVertexArray(vao);
-	    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        // modelMat = refModelMat;
-        modelMat = glm::rotate(
-            refModelMat,
-            time * glm::radians(180.0f),
-            glm::vec3(0.0f, 0.0f, 1.0f)
-        );
-        glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
-        glBindVertexArray(vaoC);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        // Stenciling
+        glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glUseProgram(program);
+        
         glEnable(GL_STENCIL_TEST);
+        glStencilMask(0xFF);
 
-    // Draw floor
-    glStencilFunc(GL_ALWAYS, 1, 0xFF); // Set any stencil to 1
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glStencilMask(0xFF); // Write to stencil buffer
-    glDepthMask(GL_FALSE); // Don't write to depth buffer
-    glClear(GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
-
-    glDrawArrays(GL_TRIANGLES, 36, 6);
-
-    // Draw cube reflection
-    glStencilFunc(GL_EQUAL, 1, 0xFF); // Pass test if stencil value is 1
-    glStencilMask(0x00); // Don't write anything to stencil buffer
-    glDepthMask(GL_TRUE); // Write to depth buffer
-
-        modelMat = glm::scale(
-            glm::translate(modelMat, glm::vec3(0, 0, -1)),
-            glm::vec3(1, 1, -1)
-        );
+        glStencilFunc(GL_ALWAYS, 3, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT);
+        glBindVertexArray(vaoS);
+        glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(glm::mat4(stenPos)));
+        glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
         glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(modelMat));
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        glStencilMask(0x00);
+        glStencilFunc(GL_EQUAL, 255, 0xFF);
         glDisable(GL_STENCIL_TEST);
-        // Stop stenciling
-
+        // modelMat = glm::rotate(
+        //     refModelMat,
+        //     time * glm::radians(180.0f),
+        //     glm::vec3(0.0f, 0.0f, 1.0f)
+        // );
+    glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(viewMat));
+    glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(projMat));
+    modelMat = glm::rotate(modelMat, glm::radians(time*0.02f), glm::vec3(0.0f, 1.0f, 0.0f));
+        for(int i = 0; i<4;i++){
+            glm::mat4 x = glm::translate(modelMat, pos[i]);
+            x = glm::rotate(x, glm::radians(time*(i+1)*20.0f), glm::vec3(1.0f, 0.3f, 0.0f));
+            glUniformMatrix4fv(model, 1, GL_FALSE, glm::value_ptr(x));
+            glBindVertexArray(vaoC);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        glDisable(GL_STENCIL_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     while ((err = glGetError()) != GL_NO_ERROR) {
 	std::cout << "OpenGL error: " << err << "\n";
-	cout << gluErrorString(err) << "\n";
+	cout << gluErrorString(err) << "{one}"<< "\n";
     }
+    glDeleteVertexArrays(1, &vaoC);
+    glDeleteVertexArrays(1, &vaoS);
+    glDeleteBuffers(1, &vboC);
+    glDeleteBuffers(1, &vboS);
+    glDeleteProgram(program);
+    glDeleteShader(vShader);
+    glDeleteShader(fShader);
+    glDeleteTextures(1, &tex);
+
     glfwDestroyWindow(window);
     glfwTerminate();
-
-    return 0;
 }
