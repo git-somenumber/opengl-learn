@@ -1,5 +1,6 @@
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../../)
+include_directories(../)
 
 add_executable(basic basic.cpp)
 target_link_libraries(basic "-framework OpenGL")
